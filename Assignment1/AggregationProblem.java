@@ -4,11 +4,15 @@ import java.util.Scanner;
 public class AggregationProblem extends Problem {
 	public State initialState;
 
+	public AggregationProblem(Scanner inputReader) {
+
+	}
+
 	public void setInitialState(State init) {
 
 	}
-	public State getInitialState(){
-
+	public State getInitialState() {
+		return null;
 	}
 	public double h(State state) {
 		return 0;

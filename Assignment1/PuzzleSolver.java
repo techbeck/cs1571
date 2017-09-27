@@ -58,21 +58,16 @@ public class PuzzleSolver {
 			System.out.println("No solution");
 		} else {
 			System.out.print("Solution:\n" + finalPath);
+			outputWriter.println("Final path: " + finalPath);
 			System.out.println("Final Path Cost: " + finalCost);
+			outputWriter.println("Total Cost: " + finalCost);
 			System.out.println("Final Time: " + finalTime);
+			outputWriter.println("Time: " + finalTime);
 			System.out.println("Final Space Frontier: " + finalSpaceFrontier);
+			outputWriter.println("Space used for frontier: " + finalSpaceFrontier);
 			System.out.println("Final Space Explored: " + finalSpaceExplored);
+			outputWriter.println("Space used for explored: " + finalSpaceExplored);
 		}
-		// outputWriter.println("Final path: " + finalPath);
-		// System.out.println("Final path: " + finalPath);
-		// outputWriter.println("Time: " + finalTime);
-		// System.out.println("Time: " + finalTime);
-		// outputWriter.println("Space used for frontier: " + finalSpaceFrontier);
-		// System.out.println("Space used for frontier: " + finalSpaceFrontier);
-		// outputWriter.println("Space used for explored: " + finalSpaceExplored);
-		// System.out.println("Space used for explored: " + finalSpaceExplored);
-		// outputWriter.println("Total Cost: " + finalCost);
-		// System.out.println("Total Cost: " + finalCost);
 	}
 
 	public void solveMonitorProblem(Scanner inputReader) {
@@ -114,7 +109,7 @@ public class PuzzleSolver {
 
 	public void solveAggregationProblem(Scanner inputReader) {
 		// TODO
-		Problem problem = new MonitorProblem(inputReader);
+		Problem problem = new AggregationProblem(inputReader);
 
 		Node solution = null;
 		if (algorithm.equals("bfs")) {
@@ -135,6 +130,7 @@ public class PuzzleSolver {
 		}
 	}
 
+	// returns a Node on success or null on failure
 	public Node bfs(Problem problem) {
 		// LinkedList addLast(element) and removeFirst() for FIFO queue
 
@@ -185,9 +181,8 @@ public class PuzzleSolver {
 		}
 	}
 
+	// returns a Node on success or null on failure
 	public Node unicost(Problem problem) {
-	    // PriorityQueue add(element) and poll()
-
 	    Node node = new Node();
 	    localTime++;
 		node.state = problem.getInitialState();
@@ -231,9 +226,8 @@ public class PuzzleSolver {
 		}
 	}
 
+	// returns a Node on success or null on failure
 	public Node iddfs(Problem problem) {
-	    // Stack push(element) and pop()
-	    //function ITERATIVE-DEEPENING-SEARCH(problem) returns a solution, or failure
 		int depth = 0;
 		while (true) {
 			Node result = dls(problem, depth);
@@ -246,15 +240,15 @@ public class PuzzleSolver {
 		}
 	}
 
+	// returns a Node with state on success, an empty Node on cutoff, or null on failure
 	private Node dls(Problem problem, int limit) {
-		//function DEPTH-LIMITED-SEARCH(problem, limit ) returns a solution, or failure/cutoff
 		Node node = new Node();
 		node.state = problem.getInitialState();
 		return recDLS(node, problem, limit);
 	}
 
+	// returns a Node with state on success, an empty Node on cutoff, or null on failure
 	private Node recDLS(Node node, Problem problem, int limit) {
-		//function RECURSIVE-DLS(node, problem, limit ) returns a solution, or failure/cutoff
 		if (node.state != null && problem.goalTest(node.state)) {
 			return node;
 		} else if (limit == 0) {
