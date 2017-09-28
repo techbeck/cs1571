@@ -5,11 +5,10 @@ public class AggregationProblem extends Problem {
 	public State initialState;
 
 	public AggregationProblem(Scanner inputReader) {
-
 	}
 
 	public void setInitialState(State init) {
-
+		initialState = init;
 	}
 	public State getInitialState() {
 		return null;

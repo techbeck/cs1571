@@ -39,8 +39,10 @@ public class PuzzleSolver {
 			String problemType = inputReader.nextLine();
 			if (problemType.equals("monitor")) {
 				solveMonitorProblem(inputReader);
-			} else if (problemType.equals("(aggregation)")) {
+			} else if (problemType.equals("aggregation")) {
 				solveAggregationProblem(inputReader);
+			} else if (problemType.equals("pancakes")) {
+				solvePancakeProblem(inputReader);
 			} else {
 				System.out.println("Invalid problem type");
 				System.exit(0);
@@ -56,18 +58,20 @@ public class PuzzleSolver {
 		}
 		if (finalPath == null) {
 			System.out.println("No solution");
+			outputWriter.println("No solution");
 		} else {
 			System.out.print("Solution:\n" + finalPath);
 			outputWriter.println("Final path: " + finalPath);
-			System.out.println("Final Path Cost: " + finalCost);
-			outputWriter.println("Total Cost: " + finalCost);
-			System.out.println("Final Time: " + finalTime);
-			outputWriter.println("Time: " + finalTime);
-			System.out.println("Final Space Frontier: " + finalSpaceFrontier);
-			outputWriter.println("Space used for frontier: " + finalSpaceFrontier);
-			System.out.println("Final Space Explored: " + finalSpaceExplored);
-			outputWriter.println("Space used for explored: " + finalSpaceExplored);
 		}
+		System.out.println("Final Path Cost: " + finalCost);
+		outputWriter.println("Total Cost: " + finalCost);
+		System.out.println("Final Time: " + finalTime);
+		outputWriter.println("Time: " + finalTime);
+		System.out.println("Final Space Frontier: " + finalSpaceFrontier);
+		outputWriter.println("Space used for frontier: " + finalSpaceFrontier);
+		System.out.println("Final Space Explored: " + finalSpaceExplored);
+		outputWriter.println("Space used for explored: " + finalSpaceExplored);
+		outputWriter.close();
 	}
 
 	public void solveMonitorProblem(Scanner inputReader) {
@@ -81,30 +85,28 @@ public class PuzzleSolver {
 			solution = unicost(problem);
 		} else if (algorithm.equals("iddfs")) {
 			solution = iddfs(problem);
+		} else if (algorithm.equals("greedy")) {
+			solution = greedy(problem);
+		} else if (algorithm.equals("Astar")) {
+			solution = Astar(problem);
 		}
-		// } else if (algorithm.equals("greedy")) {
-		// 	solution = greedy(problem);
-		// } else if (algorithm.equals("Astar")) {
-		// 	solution = Astar(problem);
-		// }
 		if (solution == null) {
-			System.out.println("No solution");
 			finalPath = null;
-			return;
+			finalCost = 0;
 		} else {
-			finalCost = (-(solution.pathCost));
-			finalTime = localTime;
-			finalSpaceFrontier = localSpaceFrontier;
-			finalSpaceExplored = localSpaceExplored;
-			for (int i = 0; i < solution.state.getState().length; i++) {
-				String s = solution.state.getState()[i];
+			for (int i = 0; i < solution.state.getStateArray().length; i++) {
+				String s = solution.state.getStateArray()[i];
 				if (!s.equals("0")) {
 					finalPath += ("S" + (i+1) + "-T" + s + "\n");
 				} else {
 					finalPath += ("S" + (i+1) + "-x" + "\n");
 				}
 			}
+			finalCost = (-(solution.pathCost));
 		}
+		finalTime = localTime;
+		finalSpaceFrontier = localSpaceFrontier;
+		finalSpaceExplored = localSpaceExplored;
 	}
 
 	public void solveAggregationProblem(Scanner inputReader) {
@@ -118,22 +120,50 @@ public class PuzzleSolver {
 			solution = unicost(problem);
 		} else if (algorithm.equals("iddfs")) {
 			solution = iddfs(problem);
+		} else if (algorithm.equals("greedy")) {
+			solution = greedy(problem);
+		} else if (algorithm.equals("Astar")) {
+			solution = Astar(problem);
 		}
-		// } else if (algorithm.equals("greedy")) {
-		// 	solution = greedy(problem);
-		// } else if (algorithm.equals("Astar")) {
-		// 	solution = Astar(problem);
-		// }
 		if (solution == null) {
 			finalPath = null;
 			return;
 		}
 	}
 
+	public void solvePancakeProblem(Scanner inputReader) {
+		Problem problem = new PancakeProblem(inputReader);
+
+		Node solution = null;
+		if (algorithm.equals("bfs")) {
+			solution = bfs(problem);
+
+		} else if (algorithm.equals("unicost")) {
+			solution = unicost(problem);
+		} else if (algorithm.equals("iddfs")) {
+			solution = iddfs(problem);
+		} else if (algorithm.equals("greedy")) {
+			solution = greedy(problem);
+		} else if (algorithm.equals("Astar")) {
+			solution = Astar(problem);
+		}
+		if (solution == null) {
+			finalPath = null;
+			finalCost = 0;
+		} else {
+			while (solution.parentNode != null) {
+				finalPath = finalPath + solution.state.toString() + "\n";
+				solution = solution.parentNode;
+			}
+			finalCost = (-(solution.pathCost));
+		}
+		finalTime = localTime;
+		finalSpaceFrontier = localSpaceFrontier;
+		finalSpaceExplored = localSpaceExplored;
+	}
+
 	// returns a Node on success or null on failure
 	public Node bfs(Problem problem) {
-		// LinkedList addLast(element) and removeFirst() for FIFO queue
-
 		Node node = new Node();
 		localTime++;
 		node.state = problem.getInitialState();
@@ -227,6 +257,7 @@ public class PuzzleSolver {
 	}
 
 	// returns a Node on success or null on failure
+	// Stack push(element) and pop() if change from recursive
 	public Node iddfs(Problem problem) {
 		int depth = 0;
 		while (true) {
@@ -257,8 +288,16 @@ public class PuzzleSolver {
 			boolean cutoffOccurred = false;
 			for (Action action : problem.actions(node.state)) {
 				Node child = new Node();
+				localTime++;
 				child.state = problem.result(node.state, action);
+				child.parentNode = node;
+				child.pathCost = problem.pathCost(node.state, action);
+				child.depth = node.depth + 1;
 				Node result = recDLS(child , problem, limit-1);
+				result.state = problem.result(node.state, action);
+				result.parentNode = node;
+				result.pathCost = problem.pathCost(node.state, action);
+				result.depth = node.depth + 1;
 				if (result != null && result.state == null) { // aka if cutoff occurred
 					cutoffOccurred = true;
 				} else if (result != null) {
@@ -271,6 +310,16 @@ public class PuzzleSolver {
 				return null;
 			}
 		}
+	}
+
+	public Node greedy(Problem problem) {
+		// TODO
+		return null;
+	}
+
+	public Node Astar(Problem problem) {
+		// TODO
+		return null;
 	}
 
 	public class Node implements Comparable<Node> {

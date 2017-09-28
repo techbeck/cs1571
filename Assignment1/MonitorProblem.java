@@ -32,13 +32,13 @@ public class MonitorProblem extends Problem {
 		return 0;
 	}
 	public boolean goalTest(State state) {
-		if (state == null || state.getState().length != numSensors) {
+		if (state == null || state.getStateArray().length != numSensors) {
 			return false;
 		}
 		boolean[] monitored = new boolean[numTargets];
 		for (int i = 0; i < numSensors; i++) {
-			if (state.getState()[i] != null && !state.getState()[i].equals("0")) {
-				monitored[Integer.parseInt(state.getState()[i])-1] = true;
+			if (state.getStateArray()[i] != null && !state.getStateArray()[i].equals("0")) {
+				monitored[Integer.parseInt(state.getStateArray()[i])-1] = true;
 			}
 		}
 		for (int i = 0; i < numTargets; i++) {
@@ -50,8 +50,8 @@ public class MonitorProblem extends Problem {
 	public List<Action> actions(State state) {
 		List<Action> result = new ArrayList<Action>();
 		int index = -1;
-		for (int i = 0; i < state.getState().length; i++) {
-			if (state.getState()[i].equals("0")) {
+		for (int i = 0; i < state.getStateArray().length; i++) {
+			if (state.getStateArray()[i].equals("0")) {
 				index = i;
 				break;
 			}
@@ -62,7 +62,7 @@ public class MonitorProblem extends Problem {
 		for (int i = 1; i <= numTargets; i++) {
 			Action newAction = new Action();
 			State newState = new MonitorState(numSensors);
-			String[] sensors = state.getState();
+			String[] sensors = state.getStateArray();
 			sensors[index] = Integer.toString(i);
 			newState.setState(sensors);
 			newAction.state1 = state;
@@ -72,7 +72,7 @@ public class MonitorProblem extends Problem {
 		return result;
 	}
 	public State result(State state, Action action) {
-		if (Arrays.equals(state.getState(), action.state1.getState())) {
+		if (Arrays.equals(state.getStateArray(), action.state1.getStateArray())) {
 			return action.state2;
 		} else {
 			return action.state1;
@@ -85,7 +85,7 @@ public class MonitorProblem extends Problem {
 	public double pathCost(State state2) {
 		double[] costs = new double[numSensors];
 		for (int i = 0; i < numSensors; i++) {
-			if (state2.getState()[i].equals("0")) {
+			if (state2.getStateArray()[i].equals("0")) {
 				costs[i] = Double.MAX_VALUE;
 				continue;
 			}
@@ -94,7 +94,7 @@ public class MonitorProblem extends Problem {
 			int sensorY = Integer.parseInt(sensorValues[2]);
 			int batteryLife = Integer.parseInt(sensorValues[3]);
 			
-			String[] targetValues = rawTargetData[Integer.parseInt(state2.getState()[i])-1].replaceAll("[\"\\s\\(\\)\\[\\]]", "").split(",");
+			String[] targetValues = rawTargetData[Integer.parseInt(state2.getStateArray()[i])-1].replaceAll("[\"\\s\\(\\)\\[\\]]", "").split(",");
 			int targetX = Integer.parseInt(targetValues[1]);
 			int targetY = Integer.parseInt(targetValues[2]);
 
@@ -107,7 +107,7 @@ public class MonitorProblem extends Problem {
 		}
 		for (int i = 0; i < numSensors; i++) {
 			for (int j = 0; j < numSensors; j++) {
-				if (state2.getState()[i].equals(state2.getState()[j])) {
+				if (state2.getStateArray()[i].equals(state2.getStateArray()[j])) {
 					if (costs[i] < costs[j]) {
 						costs[j] = costs[i];
 					} else if (costs[j] < costs[i]) {

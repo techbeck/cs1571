@@ -2,7 +2,6 @@ import java.util.List;
 import java.util.Scanner;
 
 public abstract class Problem {
-	public State initialState;
 	public abstract void setInitialState(State init);
 	public abstract State getInitialState();
 	public abstract double h(State state);

@@ -5,7 +5,7 @@ public class MonitorState extends State {
 		sensors = new int[numSensors];
 	}
 
-	public String[] getState() {
+	public String[] getStateArray() {
 		String[] result = new String[sensors.length];
 		for (int i = 0; i < sensors.length; i++) {
 			result[i] = Integer.toString(sensors[i]);
