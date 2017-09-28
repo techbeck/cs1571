@@ -5,6 +5,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.PriorityQueue;
 import java.util.Scanner;
+import java.util.Stack;
 
 public class PuzzleSolver {
 	public static String algorithm;
@@ -137,7 +138,6 @@ public class PuzzleSolver {
 		Node solution = null;
 		if (algorithm.equals("bfs")) {
 			solution = bfs(problem);
-
 		} else if (algorithm.equals("unicost")) {
 			solution = unicost(problem);
 		} else if (algorithm.equals("iddfs")) {
@@ -151,11 +151,16 @@ public class PuzzleSolver {
 			finalPath = null;
 			finalCost = 0;
 		} else {
+			Stack<String> path = new Stack<String>();
+			path.push(solution.state.toString());
 			while (solution.parentNode != null) {
-				finalPath = finalPath + solution.state.toString() + "\n";
 				solution = solution.parentNode;
+				path.push(solution.state.toString());
 			}
-			finalCost = (-(solution.pathCost));
+			while (!path.empty()) {
+				finalPath = finalPath + path.pop() + "\n";
+			}
+			finalCost = solution.pathCost;
 		}
 		finalTime = localTime;
 		finalSpaceFrontier = localSpaceFrontier;
@@ -169,25 +174,21 @@ public class PuzzleSolver {
 		node.state = problem.getInitialState();
 		node.pathCost = 0;
 		node.depth = 0;
-		// node ←a node with STATE = problem.INITIAL-STATE, PATH-COST = 0
 		if (problem.goalTest(node.state)) {
 			return node;
-			// return SOLUTION(node)
 		}
 		LinkedList<Node> frontier = new LinkedList<Node>();
 		frontier.addLast(node);
 		if (frontier.size() > localSpaceFrontier) {
 			localSpaceFrontier = frontier.size();
 		}
-		//frontier ←a FIFO queue with node as the only element
-		List<State> explored = new LinkedList<State>();
-		// explored ←an empty set
+		List<String> explored = new LinkedList<String>();
 		while (true) {
 			if (frontier.isEmpty()) {
 				return null;
 			}
 			node = frontier.removeFirst();
-			explored.add(node.state);
+			explored.add(node.state.toString());
 			if (explored.size() > localSpaceExplored) {
 				localSpaceExplored = explored.size();
 			}
@@ -196,9 +197,9 @@ public class PuzzleSolver {
 				localTime++;
 				child.state = problem.result(node.state, action);
 				child.parentNode = node;
-				child.pathCost = problem.pathCost(node.state, action);
+				child.pathCost = problem.pathCost(node.pathCost, node.state, action);
 				child.depth = node.depth + 1;
-				if (!explored.contains(child.state) && !frontier.contains(child.state)) {
+				if (!explored.contains(child.state.toString()) && !frontier.contains(child.state)) {
 					if (problem.goalTest(child.state)) {
 						return child;
 					}
@@ -226,13 +227,13 @@ public class PuzzleSolver {
 		if (frontier.size() > localSpaceFrontier) {
 			localSpaceFrontier = frontier.size();
 		}
-		List<State> explored = new LinkedList<State>();
+		List<String> explored = new LinkedList<String>();
 		while (true) {
 			if (frontier.isEmpty()) {
 				return null;
 			}
 			node = frontier.poll();
-			explored.add(node.state);
+			explored.add(node.state.toString());
 			if (explored.size() > localSpaceExplored) {
 				localSpaceExplored = explored.size();
 			}
@@ -241,12 +242,13 @@ public class PuzzleSolver {
 				localTime++;
 				child.state = problem.result(node.state, action);
 				child.parentNode = node;
-				child.pathCost = problem.pathCost(node.state, action);
+				child.pathCost = problem.pathCost(node.pathCost, node.state, action);
 				child.depth = node.depth + 1;
-				if (!explored.contains(child.state) && !frontier.contains(child.state)) {
+				if (!explored.contains(child.state.toString()) && !frontier.contains(child.state)) {
 					if (problem.goalTest(child.state)) {
 						return child;
 					}
+					//System.out.println(child.state.toString());
 					frontier.add(child);
 					if (frontier.size() > localSpaceFrontier) {
 						localSpaceFrontier = frontier.size();
@@ -291,12 +293,12 @@ public class PuzzleSolver {
 				localTime++;
 				child.state = problem.result(node.state, action);
 				child.parentNode = node;
-				child.pathCost = problem.pathCost(node.state, action);
+				child.pathCost = problem.pathCost(node.pathCost, node.state, action);
 				child.depth = node.depth + 1;
 				Node result = recDLS(child , problem, limit-1);
 				result.state = problem.result(node.state, action);
 				result.parentNode = node;
-				result.pathCost = problem.pathCost(node.state, action);
+				result.pathCost = problem.pathCost(node.pathCost, node.state, action);
 				result.depth = node.depth + 1;
 				if (result != null && result.state == null) { // aka if cutoff occurred
 					cutoffOccurred = true;

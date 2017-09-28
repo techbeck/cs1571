@@ -22,7 +22,6 @@ public class MonitorState extends State {
 				sensors[i] = 0;
 			}
 		}
-		// System.out.println(toString());
 	}
 
 	public String toString() {

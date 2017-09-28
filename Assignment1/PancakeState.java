@@ -22,7 +22,6 @@ public class PancakeState extends State {
 				pancakes[i] = 0;
 			}
 		}
-		// System.out.println(toString());
 	}
 
 	public String toString() {

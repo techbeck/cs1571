@@ -78,7 +78,7 @@ public class MonitorProblem extends Problem {
 			return action.state1;
 		}
 	}
-	public double pathCost(State state, Action action) {
+	public double pathCost(double c, State state, Action action) {
 		return pathCost(result(state, action));
 	}
 	// max w/ target, min b/t targets where each is batteryLife/distance

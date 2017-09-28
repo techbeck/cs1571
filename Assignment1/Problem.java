@@ -8,5 +8,5 @@ public abstract class Problem {
 	public abstract boolean goalTest(State state);
 	public abstract List<Action> actions(State state);
 	public abstract State result(State state, Action action);
-	public abstract double pathCost(State state, Action action);
+	public abstract double pathCost(double c, State state, Action action);
 }
