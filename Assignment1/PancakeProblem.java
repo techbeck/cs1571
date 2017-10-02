@@ -9,20 +9,18 @@ public class PancakeProblem extends Problem {
 	public State goalState;
 
 	public PancakeProblem(Scanner inputReader) {
-		if (inputReader.hasNext()) {
-			String pancakes = inputReader.nextLine().replaceAll("[\\)\\(]", "");
-			String[] sizes = pancakes.split(", ");
-			numPancakes = sizes.length;
-			initialState = new PancakeState(numPancakes);
-			initialState.setState(sizes);
-			
-			goalState = new PancakeState(numPancakes);
-			String[] goal = new String[numPancakes];
-			for (int i = 0; i < numPancakes; i++) {
-				goal[i] = Integer.toString(i+1);
-			}
-			goalState.setState(goal);
+		String pancakes = inputReader.nextLine().replaceAll("[\\)\\(]", "");
+		String[] sizes = pancakes.split(",\\s*");
+		numPancakes = sizes.length;
+		initialState = new PancakeState(numPancakes);
+		initialState.setState(sizes);
+		
+		goalState = new PancakeState(numPancakes);
+		String[] goal = new String[numPancakes];
+		for (int i = 0; i < numPancakes; i++) {
+			goal[i] = Integer.toString(i+1);
 		}
+		goalState.setState(goal);
 	}
 
 	public void setInitialState(State init) {
@@ -31,20 +29,36 @@ public class PancakeProblem extends Problem {
 	public State getInitialState() {
 		return initialState;
 	}
-	// euclidean distance from goal + number where burnt side is up
 	public double h(State state) {
-		// double diffSquare = 0.0;
-		// int burntUpCount = 0;
-  //       for (int i = 0; i < state.getStateArray().length; i++) {
-  //       	int stateValue = state.getStateArray()[i];
-  //       	if (stateValue < 0) {
-  //       		burntUpCount++;
-  //       	}
-  //       	int goalValue = goalState.getStateArray()[i];
-  //           diffSquare += (stateValue[i] - goalValue[i]) * (stateValue[i] - goalValue[i]);
-  //       }
-  //       return Math.sqrt(diffSquare) + burntUpCount;
-		return 0;
+		// // number burnt facing up
+		// int numBurnt = 0;
+		// for (int i = 0; i < state.getStateArray().length; i++) {
+		// 	char index0 = state.getStateArray()[i].charAt(0);
+		// 	if (index0 == '-') {
+		// 		numBurnt++;
+		// 	}
+		// }
+		// return numBurnt;
+
+		// vector distance from goal
+		double diffSquare = 0.0;
+		String[] stateValues = state.getStateArray();
+		String[] goalValues = goalState.getStateArray();
+		for (int i = 0; i < state.getStateArray().length; i++) {
+			int stateVal = Integer.parseInt(stateValues[i]);
+			int goalVal = Integer.parseInt(goalValues[i]);
+			diffSquare += (stateVal - goalVal) * (stateVal - goalVal);
+		}
+		return Math.sqrt(diffSquare);
+
+		// // num ouf of place
+		// int numOutOfPlace = 0;
+		// for (int i = 0; i < state.getStateArray().length; i++) {
+		// 	if (Integer.parseInt(state.getStateArray()[i]) != (i+1)) {
+		// 		numOutOfPlace++;
+		// 	}
+		// }
+		// return numOutOfPlace;
 	}
 	public boolean goalTest(State state) {
 		if (state == null) {
@@ -69,28 +83,20 @@ public class PancakeProblem extends Problem {
 		return result;
 	}
 	public State result(State state, Action action) {
-		if (Arrays.equals(state.getStateArray(), action.state1.getStateArray())) {
-			return action.state2;
-		} else {
-			return action.state1;
-		}
+		return action.getOther(state);
 	}
+	// flip index
 	public double pathCost(double c, State state, Action action) {
-		// assume path cost is flip index
-		// for (int i = action.state1.getStateArray().length-1; i >= 0; i--) {
-		// 	if (!action.state1.getStateArray()[i].equals(action.state2.getStateArray()[i])) {
-		// 		return c+i+1;
-		// 	}
-		// }
-		// return c;
-
-		return c+1;
+		for (int i = action.state1.getStateArray().length-1; i >= 0; i--) {
+			if (!action.state1.getStateArray()[i].equals(action.state2.getStateArray()[i])) {
+				return (c+i+1);
+			}
+		}
+		return c;
 	}
 
 	// will reverse and negate in place input array up to flipIndex (exclusive)
 	private String[] flip(String[] input, int flipIndex) {
-		//System.out.println("input: " + Arrays.toString(input));
-		//System.out.println("flipIndex: " + flipIndex);
 		for (int i = 0; i < flipIndex / 2; i++) {
 			String temp = input[i];
 			input[i] = input[flipIndex - 1 - i];
@@ -100,7 +106,6 @@ public class PancakeProblem extends Problem {
 			int value = Integer.parseInt(input[i]);
 			input[i] = Integer.toString(-value);
 		}
-		//System.out.println("output: " + Arrays.toString(input));
 		return input;
 	}
 }

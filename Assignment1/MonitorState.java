@@ -1,3 +1,5 @@
+import java.util.Arrays;
+
 public class MonitorState extends State {
 	public int[] sensors;
 
@@ -25,10 +27,10 @@ public class MonitorState extends State {
 	}
 
 	public String toString() {
-		String result = "";
-		for (int i = 0; i < sensors.length; i++) {
-			result = result + sensors[i] + ",";
-		}
-		return result;
+		return Arrays.toString(sensors).replaceAll("[\\[\\]]","");
+	}
+
+	public boolean equals(State s2) {
+		return this.toString().equals(s2.toString());
 	}
 }

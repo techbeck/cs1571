@@ -1,5 +1,7 @@
 import java.io.*;
 import java.lang.Comparable;
+import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -8,11 +10,12 @@ import java.util.Scanner;
 import java.util.Stack;
 
 public class PuzzleSolver {
+	public static String problemType;
 	public static String algorithm;
 	public static String finalPath = "";
-	public static int finalTime = Integer.MAX_VALUE;
-	public static int finalSpaceFrontier = Integer.MAX_VALUE;
-	public static int finalSpaceExplored = Integer.MAX_VALUE;
+	public static int finalTime = 0;
+	public static int finalSpaceFrontier = 0;
+	public static int finalSpaceExplored = 0;
 	public static double finalCost = Double.MAX_VALUE;
 	public static String localPath = "";
 	public static int localTime = 0;
@@ -37,13 +40,13 @@ public class PuzzleSolver {
 			System.exit(0);
 		}
 		if (inputReader.hasNext()) {
-			String problemType = inputReader.nextLine();
+			problemType = inputReader.nextLine().toLowerCase();
 			if (problemType.equals("monitor")) {
-				solveMonitorProblem(inputReader);
+				solveMonitorProblem();
 			} else if (problemType.equals("aggregation")) {
-				solveAggregationProblem(inputReader);
+				solveAggregationProblem();
 			} else if (problemType.equals("pancakes")) {
-				solvePancakeProblem(inputReader);
+				solvePancakeProblem();
 			} else {
 				System.out.println("Invalid problem type");
 				System.exit(0);
@@ -52,7 +55,7 @@ public class PuzzleSolver {
 
 		PrintWriter outputWriter = null;
 		try {
-			outputWriter = new PrintWriter("output.txt");
+			outputWriter = new PrintWriter(algorithm + "_output_" + args[0]);
 		} catch (IOException io) {
 			System.out.println("Problem creating output file");
 			System.exit(0);
@@ -62,26 +65,26 @@ public class PuzzleSolver {
 			outputWriter.println("No solution");
 		} else {
 			System.out.print("Solution:\n" + finalPath);
-			outputWriter.println("Final path: " + finalPath);
+			outputWriter.print("Solution:\n" + finalPath);
 		}
 		System.out.println("Final Path Cost: " + finalCost);
-		outputWriter.println("Total Cost: " + finalCost);
+		outputWriter.println("Final Path Cost: " + finalCost);
 		System.out.println("Final Time: " + finalTime);
-		outputWriter.println("Time: " + finalTime);
-		System.out.println("Final Space Frontier: " + finalSpaceFrontier);
-		outputWriter.println("Space used for frontier: " + finalSpaceFrontier);
+		outputWriter.println("Final Time: " + finalTime);
+		System.out.println("Max Space Frontier: " + finalSpaceFrontier);
+		outputWriter.println("Max Space Frontier: " + finalSpaceFrontier);
 		System.out.println("Final Space Explored: " + finalSpaceExplored);
-		outputWriter.println("Space used for explored: " + finalSpaceExplored);
+		outputWriter.println("Final Space Explored: " + finalSpaceExplored);
+		inputReader.close();
 		outputWriter.close();
 	}
 
-	public void solveMonitorProblem(Scanner inputReader) {
+	public void solveMonitorProblem() {
 		Problem problem = new MonitorProblem(inputReader);
 
 		Node solution = null;
 		if (algorithm.equals("bfs")) {
 			solution = bfs(problem);
-
 		} else if (algorithm.equals("unicost")) {
 			solution = unicost(problem);
 		} else if (algorithm.equals("iddfs")) {
@@ -110,29 +113,51 @@ public class PuzzleSolver {
 		finalSpaceExplored = localSpaceExplored;
 	}
 
-	public void solveAggregationProblem(Scanner inputReader) {
-		// TODO
+	public void solveAggregationProblem() {
 		Problem problem = new AggregationProblem(inputReader);
-
-		Node solution = null;
-		if (algorithm.equals("bfs")) {
-			solution = bfs(problem);
-		} else if (algorithm.equals("unicost")) {
-			solution = unicost(problem);
-		} else if (algorithm.equals("iddfs")) {
-			solution = iddfs(problem);
-		} else if (algorithm.equals("greedy")) {
-			solution = greedy(problem);
-		} else if (algorithm.equals("Astar")) {
-			solution = Astar(problem);
+		int numNodes = problem.getInitialState().getStateArray().length;
+		String[] start = new String[1];
+		for (String s : problem.getInitialState().getStateArray()) {
+			localPath = "";
+			start[0] = s;
+			State startState = new AggregationState(numNodes);
+			startState.setState(start);
+			problem.setInitialState(startState);
+			Node solution = null;
+			if (algorithm.equals("bfs")) {
+				solution = bfs(problem);
+			} else if (algorithm.equals("unicost")) {
+				solution = unicost(problem);
+			} else if (algorithm.equals("iddfs")) {
+				solution = iddfs(problem);
+			} else if (algorithm.equals("greedy")) {
+				solution = greedy(problem);
+			} else if (algorithm.equals("Astar")) {
+				solution = Astar(problem);
+			}
+			if (solution == null) {
+				localPath = null;
+				localCost = Integer.MAX_VALUE;;
+			} else {
+				for (int j = 0; j < solution.state.getStateArray().length; j++) {
+					localPath = localPath + solution.state.getStateArray()[j] + "\n";
+				}
+				localCost = solution.pathCost;
+			}
+			if (localCost < finalCost) {
+				finalPath = localPath;
+				finalCost = localCost;
+			}
+			finalTime += localTime;
+			finalSpaceFrontier += localSpaceFrontier;
+			finalSpaceExplored += localSpaceExplored;
 		}
-		if (solution == null) {
-			finalPath = null;
-			return;
+		if (finalPath == null) {
+			finalCost = 0;
 		}
 	}
 
-	public void solvePancakeProblem(Scanner inputReader) {
+	public void solvePancakeProblem() {
 		Problem problem = new PancakeProblem(inputReader);
 
 		Node solution = null;
@@ -151,16 +176,20 @@ public class PuzzleSolver {
 			finalPath = null;
 			finalCost = 0;
 		} else {
+			finalPath = "";
+			finalCost = solution.pathCost;
+			System.out.println("h: " + solution.h);
+			System.out.println("pathCost: " + solution.pathCost);
 			Stack<String> path = new Stack<String>();
 			path.push(solution.state.toString());
-			while (solution.parentNode != null) {
-				solution = solution.parentNode;
+			solution = solution.parentNode;
+			while (solution != null) {
 				path.push(solution.state.toString());
+				solution = solution.parentNode;
 			}
 			while (!path.empty()) {
 				finalPath = finalPath + path.pop() + "\n";
 			}
-			finalCost = solution.pathCost;
 		}
 		finalTime = localTime;
 		finalSpaceFrontier = localSpaceFrontier;
@@ -173,7 +202,6 @@ public class PuzzleSolver {
 		localTime++;
 		node.state = problem.getInitialState();
 		node.pathCost = 0;
-		node.depth = 0;
 		if (problem.goalTest(node.state)) {
 			return node;
 		}
@@ -198,12 +226,13 @@ public class PuzzleSolver {
 				child.state = problem.result(node.state, action);
 				child.parentNode = node;
 				child.pathCost = problem.pathCost(node.pathCost, node.state, action);
-				child.depth = node.depth + 1;
-				if (!explored.contains(child.state.toString()) && !frontier.contains(child.state)) {
+				child.f = child.pathCost;
+				if (!explored.contains(child.state.toString()) && !frontier.contains(child)) {
 					if (problem.goalTest(child.state)) {
 						return child;
 					}
 					frontier.addLast(child);
+
 					if (frontier.size() > localSpaceFrontier) {
 						localSpaceFrontier = frontier.size();
 					}
@@ -214,11 +243,10 @@ public class PuzzleSolver {
 
 	// returns a Node on success or null on failure
 	public Node unicost(Problem problem) {
-	    Node node = new Node();
-	    localTime++;
+		Node node = new Node();
+		localTime++;
 		node.state = problem.getInitialState();
 		node.pathCost = 0;
-		node.depth = 0;
 		if (problem.goalTest(node.state)) {
 			return node;
 		}
@@ -233,6 +261,9 @@ public class PuzzleSolver {
 				return null;
 			}
 			node = frontier.poll();
+			if (problem.goalTest(node.state)) {
+				return node;
+			}
 			explored.add(node.state.toString());
 			if (explored.size() > localSpaceExplored) {
 				localSpaceExplored = explored.size();
@@ -243,15 +274,24 @@ public class PuzzleSolver {
 				child.state = problem.result(node.state, action);
 				child.parentNode = node;
 				child.pathCost = problem.pathCost(node.pathCost, node.state, action);
-				child.depth = node.depth + 1;
-				if (!explored.contains(child.state.toString()) && !frontier.contains(child.state)) {
-					if (problem.goalTest(child.state)) {
-						return child;
-					}
-					//System.out.println(child.state.toString());
+				child.f = child.pathCost;
+				if (!explored.contains(child.state.toString()) && !frontier.contains(child)) {
 					frontier.add(child);
 					if (frontier.size() > localSpaceFrontier) {
 						localSpaceFrontier = frontier.size();
+					}
+				}
+				if (frontier.contains(child)) {
+					Node[] nodeArray = frontier.toArray(new Node[0]);
+					for (int i = 0; i < nodeArray.length; i++) {
+						if (nodeArray[i].state.equals(child.state)) {
+							if (nodeArray[i].pathCost > child.pathCost) {
+								frontier.remove(nodeArray[i]);
+								frontier.add(child);
+							} else {
+								break;
+							}
+						}
 					}
 				}
 			}
@@ -259,15 +299,15 @@ public class PuzzleSolver {
 	}
 
 	// returns a Node on success or null on failure
-	// Stack push(element) and pop() if change from recursive
 	public Node iddfs(Problem problem) {
 		int depth = 0;
 		while (true) {
 			Node result = dls(problem, depth);
-			if (result == null) {
+			if (result != null) {
+				if (result.state != null) {
+					return result;
+				}
 				return null;
-			} else if (result.state != null) {
-				return result;
 			}
 			depth++;
 		}
@@ -275,68 +315,190 @@ public class PuzzleSolver {
 
 	// returns a Node with state on success, an empty Node on cutoff, or null on failure
 	private Node dls(Problem problem, int limit) {
+		boolean cutoff = false;
 		Node node = new Node();
+		localTime++;
 		node.state = problem.getInitialState();
-		return recDLS(node, problem, limit);
-	}
-
-	// returns a Node with state on success, an empty Node on cutoff, or null on failure
-	private Node recDLS(Node node, Problem problem, int limit) {
-		if (node.state != null && problem.goalTest(node.state)) {
+		node.pathCost = 0;
+		node.depth = 0;
+		if (problem.goalTest(node.state)) {
 			return node;
-		} else if (limit == 0) {
-			return new Node();
-		} else {
-			boolean cutoffOccurred = false;
+		}
+		Stack<Node> frontier = new Stack<Node>();
+		frontier.add(node);
+		if (frontier.size() > localSpaceFrontier) {
+			localSpaceFrontier = frontier.size();
+		}
+		List<String> explored = new LinkedList<String>();
+		while (true) {
+			if (frontier.isEmpty()) {
+				if (cutoff) {
+					return null;
+				}
+				return new Node();
+			}
+			node = frontier.pop();
+			explored.add(node.state.toString());
+			if (explored.size() > localSpaceExplored) {
+				localSpaceExplored = explored.size();
+			}
 			for (Action action : problem.actions(node.state)) {
 				Node child = new Node();
 				localTime++;
 				child.state = problem.result(node.state, action);
 				child.parentNode = node;
 				child.pathCost = problem.pathCost(node.pathCost, node.state, action);
+				child.f = child.pathCost;
 				child.depth = node.depth + 1;
-				Node result = recDLS(child , problem, limit-1);
-				result.state = problem.result(node.state, action);
-				result.parentNode = node;
-				result.pathCost = problem.pathCost(node.pathCost, node.state, action);
-				result.depth = node.depth + 1;
-				if (result != null && result.state == null) { // aka if cutoff occurred
-					cutoffOccurred = true;
-				} else if (result != null) {
-					return result;
+				if (child.depth > limit) {
+					cutoff = true;
+					continue;
 				}
-			}
-			if (cutoffOccurred) {
-				return new Node();
-			} else {
-				return null;
+				if (problem.goalTest(child.state)) {
+					return child;
+				}
+				frontier.push(child);
+
+				if (frontier.size() > localSpaceFrontier) {
+					localSpaceFrontier = frontier.size();
+				}
 			}
 		}
 	}
 
 	public Node greedy(Problem problem) {
-		// TODO
-		return null;
+		Node node = new Node();
+		localTime++;
+		node.state = problem.getInitialState();
+		node.pathCost = 0;
+		if (problem.goalTest(node.state)) {
+			return node;
+		}
+		PriorityQueue<Node> frontier = new PriorityQueue<Node>();
+		frontier.add(node);
+		if (frontier.size() > localSpaceFrontier) {
+			localSpaceFrontier = frontier.size();
+		}
+		List<String> explored = new LinkedList<String>();
+		while (true) {
+			if (frontier.isEmpty()) {
+				return null;
+			}
+			node = frontier.poll();
+			if (problem.goalTest(node.state)) {
+				return node;
+			}
+			explored.add(node.state.toString());
+			if (explored.size() > localSpaceExplored) {
+				localSpaceExplored = explored.size();
+			}
+			for (Action action : problem.actions(node.state)) {
+				Node child = new Node();
+				localTime++;
+				child.state = problem.result(node.state, action);
+				child.parentNode = node;
+				child.pathCost = problem.pathCost(node.pathCost, node.state, action);
+				child.f = child.pathCost + problem.h(child.state);
+				if (!explored.contains(child.state.toString()) && !frontier.contains(child)) {
+					frontier.add(child);
+					if (frontier.size() > localSpaceFrontier) {
+						localSpaceFrontier = frontier.size();
+					}
+				}
+				if (frontier.contains(child)) {
+					Node[] nodeArray = frontier.toArray(new Node[0]);
+					for (int i = 0; i < nodeArray.length; i++) {
+						if (nodeArray[i].state.equals(child.state)) {
+							if (nodeArray[i].pathCost > child.pathCost) {
+								frontier.remove(nodeArray[i]);
+								frontier.add(child);
+							} else {
+								break;
+							}
+						}
+					}
+				}
+			}
+		}
 	}
 
 	public Node Astar(Problem problem) {
-		// TODO
-		return null;
+		Node node = new Node();
+		localTime++;
+		node.state = problem.getInitialState();
+		node.pathCost = 0;
+		node.h = 0;
+		if (problem.goalTest(node.state)) {
+			return node;
+		}
+		PriorityQueue<Node> frontier = new PriorityQueue<Node>();
+		frontier.add(node);
+		if (frontier.size() > localSpaceFrontier) {
+			localSpaceFrontier = frontier.size();
+		}
+		List<String> explored = new LinkedList<String>();
+		while (true) {
+			if (frontier.isEmpty()) {
+				return null;
+			}
+			node = frontier.poll();
+			if (problem.goalTest(node.state)) {
+				return node;
+			}
+			explored.add(node.state.toString());
+			if (explored.size() > localSpaceExplored) {
+				localSpaceExplored = explored.size();
+			}
+			for (Action action : problem.actions(node.state)) {
+				Node child = new Node();
+				localTime++;
+				child.state = problem.result(node.state, action);
+				child.parentNode = node;
+				child.pathCost = problem.pathCost(node.pathCost, node.state, action);
+				child.f = child.pathCost + problem.h(child.state);
+				child.h = node.h + problem.h(child.state);
+				if (!explored.contains(child.state.toString()) && !frontier.contains(child)) {
+					frontier.add(child);
+					if (frontier.size() > localSpaceFrontier) {
+						localSpaceFrontier = frontier.size();
+					}
+				}
+				if (frontier.contains(child)) {
+					Node[] nodeArray = frontier.toArray(new Node[0]);
+					for (int i = 0; i < nodeArray.length; i++) {
+						if (nodeArray[i].state.equals(child.state)) {
+							if (nodeArray[i].pathCost > child.pathCost) {
+								frontier.remove(nodeArray[i]);
+								frontier.add(child);
+							} else {
+								break;
+							}
+						}
+					}
+				}
+			}
+		}
 	}
 
 	public class Node implements Comparable<Node> {
 		public State state;
 		public Node parentNode;
-		public double pathCost;
+		public double pathCost;	// always gn
+		public double f; 		// fn could be gn or gn+hn
+		public double h;
 		public int depth;
 
 		public int compareTo(Node n2) {
-			if (pathCost < n2.pathCost)
+			if (f < n2.f)
 				return -1;
-			else if (pathCost > n2.pathCost)
+			else if (f > n2.f)
 				return 1;
 			else
 				return 0;
+		}
+
+		public boolean equals(Node n2) {
+			return state.equals(n2.state);
 		}
 	}
 }

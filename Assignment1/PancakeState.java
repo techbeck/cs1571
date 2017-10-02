@@ -1,3 +1,5 @@
+import java.util.Arrays;
+
 public class PancakeState extends State {
 	public int[] pancakes;
 
@@ -25,10 +27,10 @@ public class PancakeState extends State {
 	}
 
 	public String toString() {
-		String result = "";
-		for (int i = 0; i < pancakes.length; i++) {
-			result = result + pancakes[i] + ",";
-		}
-		return result;
+		return Arrays.toString(pancakes).replaceAll("[\\[\\]]","");
+	}
+
+	public boolean equals(State s2) {
+		return this.toString().equals(s2.toString());
 	}
 }
