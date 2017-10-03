@@ -85,7 +85,6 @@ public class AggregationProblem extends Problem {
 				return false;
 			}
 		}
-		// System.out.println("\n");
 		return true;
 	}
 	public List<Action> actions(State state) {
@@ -129,7 +128,6 @@ public class AggregationProblem extends Problem {
 		double cost = edge.delay;
 		return c+cost;
 	}
-
 
 	private boolean duplicatesCheck(State state) {
 		String[] stateArray = state.getStateArray();

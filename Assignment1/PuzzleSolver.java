@@ -27,11 +27,10 @@ public class PuzzleSolver {
 	public static void main(String[] args) {
 		new PuzzleSolver(args);
 	}
-
 	public PuzzleSolver(String[] args) {
 		try {
 			inputReader = new Scanner(new File(args[0]));
-			algorithm = args[1];
+			algorithm = args[1].toLowerCase();
 		} catch (IOException io) {
 			System.out.println("Missing data input file");
 			System.exit(0);
@@ -78,7 +77,6 @@ public class PuzzleSolver {
 		inputReader.close();
 		outputWriter.close();
 	}
-
 	public void solveMonitorProblem() {
 		Problem problem = new MonitorProblem(inputReader);
 
@@ -91,7 +89,7 @@ public class PuzzleSolver {
 			solution = iddfs(problem);
 		} else if (algorithm.equals("greedy")) {
 			solution = greedy(problem);
-		} else if (algorithm.equals("Astar")) {
+		} else if (algorithm.equals("astar")) {
 			solution = Astar(problem);
 		}
 		if (solution == null) {
@@ -112,7 +110,6 @@ public class PuzzleSolver {
 		finalSpaceFrontier = localSpaceFrontier;
 		finalSpaceExplored = localSpaceExplored;
 	}
-
 	public void solveAggregationProblem() {
 		Problem problem = new AggregationProblem(inputReader);
 		int numNodes = problem.getInitialState().getStateArray().length;
@@ -132,7 +129,7 @@ public class PuzzleSolver {
 				solution = iddfs(problem);
 			} else if (algorithm.equals("greedy")) {
 				solution = greedy(problem);
-			} else if (algorithm.equals("Astar")) {
+			} else if (algorithm.equals("astar")) {
 				solution = Astar(problem);
 			}
 			if (solution == null) {
@@ -156,7 +153,6 @@ public class PuzzleSolver {
 			finalCost = 0;
 		}
 	}
-
 	public void solvePancakeProblem() {
 		Problem problem = new PancakeProblem(inputReader);
 
@@ -169,7 +165,7 @@ public class PuzzleSolver {
 			solution = iddfs(problem);
 		} else if (algorithm.equals("greedy")) {
 			solution = greedy(problem);
-		} else if (algorithm.equals("Astar")) {
+		} else if (algorithm.equals("astar")) {
 			solution = Astar(problem);
 		}
 		if (solution == null) {
@@ -178,8 +174,6 @@ public class PuzzleSolver {
 		} else {
 			finalPath = "";
 			finalCost = solution.pathCost;
-			System.out.println("h: " + solution.h);
-			System.out.println("pathCost: " + solution.pathCost);
 			Stack<String> path = new Stack<String>();
 			path.push(solution.state.toString());
 			solution = solution.parentNode;
@@ -195,7 +189,6 @@ public class PuzzleSolver {
 		finalSpaceFrontier = localSpaceFrontier;
 		finalSpaceExplored = localSpaceExplored;
 	}
-
 	// returns a Node on success or null on failure
 	public Node bfs(Problem problem) {
 		Node node = new Node();
@@ -240,7 +233,6 @@ public class PuzzleSolver {
 			}
 		}
 	}
-
 	// returns a Node on success or null on failure
 	public Node unicost(Problem problem) {
 		Node node = new Node();
@@ -297,7 +289,6 @@ public class PuzzleSolver {
 			}
 		}
 	}
-
 	// returns a Node on success or null on failure
 	public Node iddfs(Problem problem) {
 		int depth = 0;
@@ -312,7 +303,6 @@ public class PuzzleSolver {
 			depth++;
 		}
 	}
-
 	// returns a Node with state on success, an empty Node on cutoff, or null on failure
 	private Node dls(Problem problem, int limit) {
 		boolean cutoff = false;
@@ -365,7 +355,6 @@ public class PuzzleSolver {
 			}
 		}
 	}
-
 	public Node greedy(Problem problem) {
 		Node node = new Node();
 		localTime++;
@@ -398,7 +387,7 @@ public class PuzzleSolver {
 				child.state = problem.result(node.state, action);
 				child.parentNode = node;
 				child.pathCost = problem.pathCost(node.pathCost, node.state, action);
-				child.f = child.pathCost + problem.h(child.state);
+				child.f = problem.h(child.state);
 				if (!explored.contains(child.state.toString()) && !frontier.contains(child)) {
 					frontier.add(child);
 					if (frontier.size() > localSpaceFrontier) {
@@ -421,13 +410,11 @@ public class PuzzleSolver {
 			}
 		}
 	}
-
 	public Node Astar(Problem problem) {
 		Node node = new Node();
 		localTime++;
 		node.state = problem.getInitialState();
 		node.pathCost = 0;
-		node.h = 0;
 		if (problem.goalTest(node.state)) {
 			return node;
 		}
@@ -456,7 +443,6 @@ public class PuzzleSolver {
 				child.parentNode = node;
 				child.pathCost = problem.pathCost(node.pathCost, node.state, action);
 				child.f = child.pathCost + problem.h(child.state);
-				child.h = node.h + problem.h(child.state);
 				if (!explored.contains(child.state.toString()) && !frontier.contains(child)) {
 					frontier.add(child);
 					if (frontier.size() > localSpaceFrontier) {
@@ -485,7 +471,6 @@ public class PuzzleSolver {
 		public Node parentNode;
 		public double pathCost;	// always gn
 		public double f; 		// fn could be gn or gn+hn
-		public double h;
 		public int depth;
 
 		public int compareTo(Node n2) {
@@ -496,7 +481,6 @@ public class PuzzleSolver {
 			else
 				return 0;
 		}
-
 		public boolean equals(Node n2) {
 			return state.equals(n2.state);
 		}

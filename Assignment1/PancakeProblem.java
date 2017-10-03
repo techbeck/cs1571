@@ -30,35 +30,14 @@ public class PancakeProblem extends Problem {
 		return initialState;
 	}
 	public double h(State state) {
-		// // number burnt facing up
-		// int numBurnt = 0;
-		// for (int i = 0; i < state.getStateArray().length; i++) {
-		// 	char index0 = state.getStateArray()[i].charAt(0);
-		// 	if (index0 == '-') {
-		// 		numBurnt++;
-		// 	}
-		// }
-		// return numBurnt;
-
-		// vector distance from goal
-		double diffSquare = 0.0;
-		String[] stateValues = state.getStateArray();
-		String[] goalValues = goalState.getStateArray();
+		// num ouf of place
+		int numOutOfPlace = 0;
 		for (int i = 0; i < state.getStateArray().length; i++) {
-			int stateVal = Integer.parseInt(stateValues[i]);
-			int goalVal = Integer.parseInt(goalValues[i]);
-			diffSquare += (stateVal - goalVal) * (stateVal - goalVal);
+			if (Integer.parseInt(state.getStateArray()[i]) != (i+1)) {
+				numOutOfPlace++;
+			}
 		}
-		return Math.sqrt(diffSquare);
-
-		// // num ouf of place
-		// int numOutOfPlace = 0;
-		// for (int i = 0; i < state.getStateArray().length; i++) {
-		// 	if (Integer.parseInt(state.getStateArray()[i]) != (i+1)) {
-		// 		numOutOfPlace++;
-		// 	}
-		// }
-		// return numOutOfPlace;
+		return numOutOfPlace;
 	}
 	public boolean goalTest(State state) {
 		if (state == null) {
@@ -68,11 +47,11 @@ public class PancakeProblem extends Problem {
 	}
 	public List<Action> actions(State state) {
 		List<Action> result = new ArrayList<Action>();
-		// you can't flip a stack w/ less than 2 pancakes, so no actions possible
-		if (state == null || state.getStateArray().length < 2) {
+		// you can't flip a stack w/ no pancakes, so no actions possible
+		if (state == null || state.getStateArray().length < 1) {
 			return result;
 		}
-		for (int i = 2; i <= state.getStateArray().length; i++) {
+		for (int i = 1; i <= state.getStateArray().length; i++) {
 			Action newAction = new Action();
 			State newState = new PancakeState(numPancakes);
 			newState.setState(flip(state.getStateArray(), i));
@@ -85,14 +64,8 @@ public class PancakeProblem extends Problem {
 	public State result(State state, Action action) {
 		return action.getOther(state);
 	}
-	// flip index
 	public double pathCost(double c, State state, Action action) {
-		for (int i = action.state1.getStateArray().length-1; i >= 0; i--) {
-			if (!action.state1.getStateArray()[i].equals(action.state2.getStateArray()[i])) {
-				return (c+i+1);
-			}
-		}
-		return c;
+		return c+1;
 	}
 
 	// will reverse and negate in place input array up to flipIndex (exclusive)

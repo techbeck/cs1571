@@ -6,7 +6,6 @@ public class MonitorState extends State {
 	public MonitorState(int numSensors) {
 		sensors = new int[numSensors];
 	}
-
 	public String[] getStateArray() {
 		String[] result = new String[sensors.length];
 		for (int i = 0; i < sensors.length; i++) {
@@ -14,7 +13,6 @@ public class MonitorState extends State {
 		}
 		return result;
 	}
-
 	public void setState(String[] s) {
 		sensors = new int[s.length];
 		for (int i = 0; i < s.length; i++) {
@@ -25,11 +23,9 @@ public class MonitorState extends State {
 			}
 		}
 	}
-
 	public String toString() {
 		return Arrays.toString(sensors).replaceAll("[\\[\\]]","");
 	}
-
 	public boolean equals(State s2) {
 		return this.toString().equals(s2.toString());
 	}

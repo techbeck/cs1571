@@ -16,7 +16,6 @@ public class MonitorProblem extends Problem {
 		this.initialState = new MonitorState(numSensors);
 		this.initialState.setState(new String[numSensors]);
 	}
-
 	public void setInitialState(State init) {
 		initialState = init;
 	}
